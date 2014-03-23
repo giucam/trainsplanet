@@ -31,6 +31,8 @@ uniform highp int faceSize;
 
 in highp vec2 vertex;
 
+out mediump vec3 normal;
+
 vec3 mapToSphere(vec3 pos, float height)
 {
     vec3 p = pos;
@@ -56,12 +58,29 @@ void main(void)
 {
     vec4 pos = vec4(vertexGridPos(vertex), 0., 1.);
     gl_Position = pv * vec4(mapToSphere((model * pos).xyz, waterLevel), 1.);
+
+    vec3 off = vec3(-1., 0., 1.);
+    vec3 v01 = mapToSphere((model * vec4(vertexGridPos(vec2(vertex + off.xy)), 0., 1.)).xyz, waterLevel);
+    vec3 v21 = mapToSphere((model * vec4(vertexGridPos(vec2(vertex + off.zy)), 0., 1.)).xyz, waterLevel);
+    vec3 v10 = mapToSphere((model * vec4(vertexGridPos(vec2(vertex + off.yx)), 0., 1.)).xyz, waterLevel);
+    vec3 v12 = mapToSphere((model * vec4(vertexGridPos(vec2(vertex + off.yz)), 0., 1.)).xyz, waterLevel);
+
+    vec3 va = v21 - v01;
+    vec3 vb = v12 - v10;
+
+    normal = vec3(cross(va, vb));
 }
 
 [fragment]
 #version 330
 
+in mediump vec3 normal;
+
 void main(void)
 {
-    gl_FragColor = vec4(0, 0.3, 0.8, 0.7);
+    float ambient = 0.5;
+    vec3 lightDir = (normalize(vec4(0,0.5,0,0))).xyz;
+    vec3 lightColor = vec3(1,1,1);
+    float diffuseIntensity = max(0.0, dot(normalize(normal.xyz), -lightDir));
+    gl_FragColor = vec4(0, 0.3, 0.8, 0.7) * vec4(1,1,1,1) * vec4(lightColor * (ambient + diffuseIntensity), 1.0);
 }
