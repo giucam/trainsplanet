@@ -20,11 +20,39 @@
 #ifndef FRUSTUM_H
 #define FRUSTUM_H
 
+#include <QMatrix4x4>
+
+class Plane
+{
+public:
+    Plane() {}
+    Plane(double a, double b, double c, double d);
+    Plane(const QVector4D &coeffs);
+    Plane(const QVector3D &pos, const QVector3D &normal);
+
+    double distancePoint(const QVector3D &pos) const;
+
+private:
+    QVector4D m_coeffs;
+};
+
 
 class Frustum
 {
 public:
-    
+    Frustum(const QMatrix4x4 &view, const QMatrix4x4 &proj);
+
+    bool testSphere(const QVector3D &pos, double radius) const;
+
+private:
+    QMatrix4x4 m_view;
+    QMatrix4x4 m_mvp;
+    Plane m_nearPlane;
+    Plane m_farPlane;
+    Plane m_rightPlane;
+    Plane m_topPlane;
+    Plane m_leftPlane;
+    Plane m_bottomPlane;
 };
 
 #endif

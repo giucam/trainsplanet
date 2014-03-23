@@ -154,6 +154,21 @@ QVector3D MiscUtils::mapSphereToCube(const QVector3D &pos)
     return position;
 }
 
+QVector3D MiscUtils::mapCubeToSphere(const QVector3D &pos, double faceSize)
+{
+    QVector3D p = pos;
+    double d = faceSize / 2. * 32. / 33.;
+    double x = p.x() / d;
+    double y = p.y() / d;
+    double z = p.z() / d;
+    p[0] *= sqrt(1.0 - y * y * 0.5 - z * z * 0.5 + y * y * z * z / 3.0);
+    p[1] *= sqrt(1.0 - z * z * 0.5 - x * x * 0.5 + z * z * x * x / 3.0);
+    p[2] *= sqrt(1.0 - x * x * 0.5 - y * y * 0.5 + x * x * y * y / 3.0);
+
+    return p;
+}
+
+
 QString MiscUtils::shaderCode(const QString &fileName, const QString &shaderName)
 {
     QFile file(fileName);

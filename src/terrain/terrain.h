@@ -51,7 +51,7 @@ public:
     ~Terrain();
 
     void init();
-    void update(const QVector3D &camera, const Frustum &frustum);
+    bool update(const QVector3D &camera, const Frustum &frustum);
     void pick(const QPointF &mouse, const QMatrix4x4 &proj, const QMatrix4x4 &view);
     Statistics render(const QMatrix4x4 &proj, const QMatrix4x4 &view);
     void cycleRenderMode();

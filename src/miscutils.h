@@ -30,6 +30,7 @@ public:
      * position must be normalized
      */
     static QVector3D mapSphereToCube(const QVector3D &position);
+    static QVector3D mapCubeToSphere(const QVector3D &pos, double faceSize);
 
     static QString shaderCode(const QString &filename, const QString &shader);
 };

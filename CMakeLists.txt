@@ -18,6 +18,7 @@ set(SOURCES
     src/main.cpp
     src/window.cpp
     src/miscutils.cpp
+    src/frustum.cpp
     src/gl/glprogram.cpp
     src/terrain/terrain.cpp
     src/terrain/datafetcher.cpp

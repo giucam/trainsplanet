@@ -266,19 +266,15 @@ void Terrain::pick(const QPointF &mouse, const QMatrix4x4 &proj, const QMatrix4x
 // qDebug()<<p<<pickPos<<p.lengthSquared();
 }
 
-void Terrain::update(const QVector3D &camera, const Frustum &frustum)
+bool Terrain::update(const QVector3D &camera, const Frustum &frustum)
 {
-
-
-
+    bool again = false;
     for (int i = 0; i < 6; ++i) {
-        m_nodes[i] = m_tree[i]->findNodes(camera, frustum);
-        for (QuadTreeNode *node: m_nodes[i]) {
-//             node->fetchData();
-        }
+        m_nodes[i] = m_tree[i]->findNodes(camera, frustum, again);
     }
 
     m_cameraPos = MiscUtils::mapSphereToCube(camera.normalized()) * camera.length();
+    return again;
 }
 
 inline void renderMesh(QuadTreeNode::Mesh *mesh, Terrain::Statistics &stats)
@@ -400,6 +396,10 @@ void Terrain::renderTerrainWf(const QMatrix4x4 &proj, const QMatrix4x4 &view)
             glActiveTexture(GL_TEXTURE0);
             glUniform1i(m_wfprogram->uniformLocation("heightmap"), 0);
             node->texture->bind();
+
+            glActiveTexture(GL_TEXTURE3);
+            glUniform1i(m_wfprogram->uniformLocation("overlay"), 3);
+            node->overlayTexture->bind();
 
             m_wfprogram->setUniformValue(morphDataLoc, node->morphData[0], node->morphData[1]);
 

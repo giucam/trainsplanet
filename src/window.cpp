@@ -40,6 +40,7 @@ Window::Window()
       , m_terrain(nullptr)
       , m_mouseDown(false)
       , m_speed(0.01)
+      , m_needsUpdate(true)
       , m_curTimeId(0)
 {
     updateUi();
@@ -117,7 +118,7 @@ void Window::mouseMoveEvent(QMouseEvent *event)
     m_camera.orientation.normalize();
 
 
-//     buildView();
+    m_needsUpdate = true;
 
     m_mousePos = event->localPos();
 }
@@ -131,7 +132,7 @@ void Window::wheelEvent(QWheelEvent *event)
 
     m_camera.distance -= d;
 
-//     buildView();
+    m_needsUpdate = true;
 }
 
 void Window::keyPressEvent(QKeyEvent *event)
@@ -195,45 +196,34 @@ void Window::updateView()
     if (m_keysPressed.contains(Qt::Key_W)) {
         QVector3D vec(m_view(0, 0), m_view(0, 1), m_view(0, 2));
         quat *= QQuaternion::fromAxisAndAngle(vec, amount);
+        m_needsUpdate = true;
     }
     if (m_keysPressed.contains(Qt::Key_S)) {
         QVector3D vec(m_view(0, 0), m_view(0, 1), m_view(0, 2));
         quat *= QQuaternion::fromAxisAndAngle(vec, -amount);
+        m_needsUpdate = true;
     }
     if (m_keysPressed.contains(Qt::Key_A)) {
         QVector3D vec(m_view(1, 0), m_view(1, 1), m_view(1, 2));
         quat *= QQuaternion::fromAxisAndAngle(vec, amount);
+        m_needsUpdate = true;
     }
     if (m_keysPressed.contains(Qt::Key_D)) {
         QVector3D vec(m_view(1, 0), m_view(1, 1), m_view(1, 2));
         quat *= QQuaternion::fromAxisAndAngle(vec, -amount);
+        m_needsUpdate = true;
     }
     if (m_keysPressed.contains(Qt::Key_Q)) {
         QVector3D vec(m_view(2, 0), m_view(2, 1), m_view(2, 2));
         quat *= QQuaternion::fromAxisAndAngle(vec, -amount);
+        m_needsUpdate = true;
     }
     if (m_keysPressed.contains(Qt::Key_E)) {
         QVector3D vec(m_view(2, 0), m_view(2, 1), m_view(2, 2));
         quat *= QQuaternion::fromAxisAndAngle(vec, amount);
+        m_needsUpdate = true;
     }
 
-
-//     if (m_camera.pos.lengthSquared() > 0.1) {
-//         pos.normalize();
-//         QVector3D newPos = m_camera.pos.normalized();
-//         QVector3D axis = QVector3D::crossProduct(newPos, pos).normalized();
-//         qDebug()<<QVector3D::dotProduct(newPos, pos)<<newPos<<pos<<(QVector3D::dotProduct(newPos, pos));
-//         double angle = qAcos(QVector3D::dotProduct(newPos, pos));
-//
-//         if (fabs(angle) < 1.) {
-//
-//         qDebug()<<QQuaternion::fromAxisAndAngle(axis, angle * 180. / 3.1415)<<angle;
-//         m_camera.orientation *= QQuaternion::fromAxisAndAngle(axis, angle * 180. / 3.1415);
-//         m_camera.orientation.normalize();
-//
-//         qDebug()<<m_camera.orientation;
-//         }
-//     }
 
     m_camera.rotation *= quat;
     m_camera.rotation.normalize();
@@ -246,7 +236,8 @@ void Window::buildView()
     m_view.setToIdentity();
     m_view.rotate(m_camera.orientation);
 //     m_view.translate(m_camera.pos);
-    m_view.translate(QVector3D(m_camera.distance, m_camera.distance, m_camera.distance));
+//     m_view.translate(QVector3D(m_camera.distance, m_camera.distance, m_camera.distance));
+    m_view.translate(QVector3D(0,0,-m_camera.distance));
     m_view.rotate(m_camera.rotation);
 }
 
@@ -275,8 +266,9 @@ void Window::sync()
         m_projection.perspective(fov, aspect, zNear, zFar);
 
         m_camera.distance = 4800;
-        m_camera.orientation = QQuaternion(0.354394, -0.24355, 0.825291, -0.366037);
-        m_camera.rotation = QQuaternion(0.593273, 0.507288, 0.114765, -0.614423);
+//         m_camera.orientation = QQuaternion(0.354394, -0.24355, 0.825291, -0.366037);
+//         m_camera.rotation = QQuaternion(0.593273, 0.507288, 0.114765, -0.614423);
+//         m_camera.rotation = QQuaternion(0, 0, 1, 45);
 
         glClearColor(1, 1, 1, 1);
     }
@@ -319,7 +311,10 @@ void Window::renderNow()
 // qDebug()<<m_camera.orientation<<m_camera.pos;
 
 //     projection.translate(-128, 138, -80);
-    m_terrain->update(-(m_view.inverted() * QVector3D(0,0,0)), Frustum());
+
+    if (m_needsUpdate) {
+        m_needsUpdate = m_terrain->update(-(m_view.inverted() * QVector3D(0,0,0)), Frustum(m_view, m_projection));
+    }
     Terrain::Statistics stats = m_terrain->render(m_projection, m_view);
     m_numDrawCalls = stats.numDrawCalls;
     m_numTriangles = stats.numTriangles;

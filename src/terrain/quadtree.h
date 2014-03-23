@@ -42,7 +42,7 @@ public:
 
     void fetchData();
     void uploadData();
-    bool selectNode(const QVector3D &pos, const Frustum &frustum, QList<QuadTreeNode *> &list);
+    bool selectNode(const QVector3D &pos, const Frustum &frustum, QList<QuadTreeNode *> &list, bool &again);
     bool findNearestPoint(QVector3D &p);
 
     bool dataFetched() const;
@@ -91,7 +91,7 @@ class QuadTree
 public:
     QuadTree(DataFetcher *fetcher, HeightMap::Face face, HeightMap *heightMap, int lodLevels);
 
-    QList<QuadTreeNode *> findNodes(const QVector3D &pos, const Frustum &frustum);
+    QList<QuadTreeNode *> findNodes(const QVector3D &pos, const Frustum &frustum, bool &again);
     QVector3D findNearestPoint(const QVector3D &p);
 // private:
 

@@ -61,6 +61,7 @@ private:
     unsigned int m_frameTime;
     QList<int> m_keysPressed;
     double m_speed;
+    bool m_needsUpdate;
 
     double m_fps;
     unsigned int m_times[20];

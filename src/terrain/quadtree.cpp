@@ -29,6 +29,7 @@
 #include "quadtree.h"
 #include "heightmap.h"
 #include "miscutils.h"
+#include "frustum.h"
 
 static const int MESHSIZE = 33;
 static const double RANGEMULTIPLIER = 150.;
@@ -345,10 +346,9 @@ bool boxIntersectsSphere(QVector3D min, QVector3D max, QVector3D p, double r)
     return dmin <= SQR(r);
 }
 
-bool QuadTreeNode::selectNode(const QVector3D &pos, const Frustum &frustum, QList<QuadTreeNode *> &list)
+bool QuadTreeNode::selectNode(const QVector3D &pos, const Frustum &frustum, QList<QuadTreeNode *> &list, bool &again)
 {
-    static const double multiplier = 150.;
-    double range = multiplier * chunk->size() / (double)MESHSIZE;
+    double range = RANGEMULTIPLIER * chunk->size() / (double)MESHSIZE;
 
     double M = double(MESHSIZE - 1)/ (double)MESHSIZE;
 
@@ -360,9 +360,19 @@ bool QuadTreeNode::selectNode(const QVector3D &pos, const Frustum &frustum, QLis
         return false;
     }
 
-//     if (frustumculled) {
-//         return true;
-//     }
+    // dumb and badly working frustum culling.
+    // TODO: improve it
+    QVector3D mmin(chunk->x()*M, chunk->y()*M, minHeight * 50);
+    QVector3D mmax(chunk->x()*M + chunk->size(), chunk->y()*M + chunk->size(), maxHeight * 50);
+    QVector3D c((mmin + mmax) / 2.);
+    double z = c.z();
+    c[2] = 0.;
+    c = MiscUtils::mapCubeToSphere(tree->m_transform * c, 8192);
+    c += c.normalized() * z;
+    double r = (mmax - mmin).length() / 2.;
+    if (!frustum.testSphere(c, r)) {
+        return true;
+    }
 
     if (chunk->size() <= MESHSIZE) {
         list << this;
@@ -370,7 +380,7 @@ bool QuadTreeNode::selectNode(const QVector3D &pos, const Frustum &frustum, QLis
         return true;
     }
 
-    double nextRange = multiplier * chunk->size() / (double)(MESHSIZE * 2);
+    double nextRange = RANGEMULTIPLIER * chunk->size() / (double)(MESHSIZE * 2);
     if (boxIntersectsSphere(min, max, pos, nextRange)) {
         if (children[0]) {
             bool n= true;
@@ -380,7 +390,10 @@ bool QuadTreeNode::selectNode(const QVector3D &pos, const Frustum &frustum, QLis
                 if (!child->dataUploaded() && child->dataFetched()) {
                     child->uploadData();
                 }
-                if (!child->dataFetched() || !child->selectNode(pos, frustum, list)) {
+                if (!child->dataFetched()) {
+                    again = true;
+                }
+                if (!child->dataFetched() || !child->selectNode(pos, frustum, list, again)) {
                     if (n) list << this;
                     n = false;
 
@@ -394,6 +407,7 @@ bool QuadTreeNode::selectNode(const QVector3D &pos, const Frustum &frustum, QLis
             children[1] = new QuadTreeNode(this, chunk->map->chunk(chunk->face(), chunk->x(), chunk->y() + s, s), lod + 1);
             children[2] = new QuadTreeNode(this, chunk->map->chunk(chunk->face(), chunk->x() + s, chunk->y() + s, s), lod + 1);
             children[3] = new QuadTreeNode(this, chunk->map->chunk(chunk->face(), chunk->x() + s, chunk->y(), s), lod + 1);
+            again = true;
         }
     }
 
@@ -415,7 +429,7 @@ bool QuadTreeNode::findNearestPoint(QVector3D &p)
     return false;
 }
 
-QList<QuadTreeNode *> QuadTree::findNodes(const QVector3D &p, const Frustum &frustum)
+QList<QuadTreeNode *> QuadTree::findNodes(const QVector3D &p, const Frustum &frustum, bool &again)
 {
     QList<QuadTreeNode *> nodes;
 
@@ -430,7 +444,7 @@ QList<QuadTreeNode *> QuadTree::findNodes(const QVector3D &p, const Frustum &fru
     QVector3D cam = MiscUtils::mapSphereToCube(p.normalized()) * p.length();
     QVector3D pos = m_transform.inverted().map(-cam);
 
-    m_head->selectNode(pos, frustum, nodes);
+    m_head->selectNode(pos, frustum, nodes, again);
     if (nodes.isEmpty()) {
         nodes << m_head;
     }
