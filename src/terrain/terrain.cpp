@@ -49,7 +49,7 @@ Terrain::Terrain(QObject *parent)
 
     int seed = 2;//rand();
 
-    HeightMap *heightMap = new HeightMap(new RandomGenerator(FACESIZE, seed));
+    HeightMap *heightMap = new HeightMap(new RandomGenerator(FACESIZE, m_heightScale, seed));
 
     m_tree[0] = new QuadTree(m_dataFetcher, HeightMap::Face::Top, heightMap, 2);
     m_tree[1] = new QuadTree(m_dataFetcher, HeightMap::Face::Front, heightMap, 2);
@@ -110,7 +110,6 @@ void Terrain::init()
     m_program->link();
     m_program->bind();
     m_program->setUniformValue("meshSize", MESHSIZE);
-    m_program->setUniformValue("heightScale", m_heightScale);
     m_program->setUniformValue("faceSize", FACESIZE);
 
     m_vao = new QOpenGLVertexArrayObject(this);
@@ -141,7 +140,6 @@ void Terrain::init()
     m_wfprogram->link();
     m_wfprogram->bind();
     m_wfprogram->setUniformValue("meshSize", MESHSIZE);
-    m_wfprogram->setUniformValue("heightScale", m_heightScale);
     m_wfprogram->setUniformValue("faceSize", FACESIZE);
 
     m_wfvao = new QOpenGLVertexArrayObject(this);

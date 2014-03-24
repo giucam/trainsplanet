@@ -95,6 +95,7 @@ public:
     QVector3D findNearestPoint(const QVector3D &p);
 // private:
 
+    Terrain *m_terrain;
     DataFetcher *m_dataFetcher;
     HeightMap *m_heightMap;
     int m_lodLevels;

@@ -362,14 +362,12 @@ bool QuadTreeNode::selectNode(const QVector3D &pos, const Frustum &frustum, QLis
 
     // dumb and badly working frustum culling.
     // TODO: improve it
-    QVector3D mmin(chunk->x()*M, chunk->y()*M, minHeight * 50);
-    QVector3D mmax(chunk->x()*M + chunk->size(), chunk->y()*M + chunk->size(), maxHeight * 50);
-    QVector3D c((mmin + mmax) / 2.);
+    QVector3D c((min + max) / 2.);
     double z = c.z();
     c[2] = 0.;
-    c = MiscUtils::mapCubeToSphere(tree->m_transform * c, 8192);
+    c = MiscUtils::mapCubeToSphere(tree->m_transform * c, chunk->map->size());
     c += c.normalized() * z;
-    double r = (mmax - mmin).length() / 2.;
+    double r = (max - min).length() / 2.;
     if (!frustum.testSphere(c, r)) {
         return true;
     }

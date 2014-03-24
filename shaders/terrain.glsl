@@ -27,7 +27,6 @@ uniform highp mat4 model;
 uniform highp int meshSize;
 uniform highp vec4 nodeData;
 uniform highp vec2 morphData;
-uniform highp float heightScale;
 uniform highp int faceSize;
 uniform highp vec3 cameraPos;
 uniform highp vec3 cursorPos;
@@ -91,9 +90,9 @@ void main(void)
         posInGrid += displace * meshSize;
     }
     vec2 uv = makeUV(posInGrid);
-    float height = texture(heightmap, uv).r * heightScale;
+    float height = texture(heightmap, uv).r;
 
-    height += texture(overlay, uv).r * heightScale;
+    height += texture(overlay, uv).r;
 
 //     if (morphing2 > 0.) {
 //         vec2 displace = morphVertex(posInGrid.xy / 2, morphing2, meshSize / 2);
@@ -101,7 +100,7 @@ void main(void)
 //         posInGrid += displace * meshSize;
 //
 //         uv = posInGrid.xy + vec2(0.5, 0.5);
-//         height = texture(heightmap, uv).r * heightScale;
+//         height = texture(heightmap, uv).r;
 //     }
 
     texUV = pos.xy / meshSize;
@@ -113,10 +112,10 @@ void main(void)
     gl_Position = proj * view * vec4(mapToSphere(modelPos.xyz, height), 1.);
 
     vec3 off = vec3(-1. - morphing, 0., 1. + morphing);
-    float s01 = texture(heightmap, uv + off.xy).r * heightScale;
-    float s21 = texture(heightmap, uv + off.zy).r * heightScale;
-    float s10 = texture(heightmap, uv + off.yx).r * heightScale;
-    float s12 = texture(heightmap, uv + off.yz).r * heightScale;
+    float s01 = texture(heightmap, uv + off.xy).r;
+    float s21 = texture(heightmap, uv + off.zy).r;
+    float s10 = texture(heightmap, uv + off.yx).r;
+    float s12 = texture(heightmap, uv + off.yz).r;
 
     vec3 v01 = mapToSphere((model * vec4(vertexGridPos(vec2(posInGrid + off.xy)), 0., 1.)).xyz, s01);
     vec3 v21 = mapToSphere((model * vec4(vertexGridPos(vec2(posInGrid + off.zy)), 0., 1.)).xyz, s21);

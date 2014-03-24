@@ -63,8 +63,9 @@ static QVector3D mapToSphere(const QVector3D &pos, double faceSize)
     return p;
 }
 
-RandomGenerator::RandomGenerator(int size, int seed)
+RandomGenerator::RandomGenerator(int size, double heightScale, int seed)
                : m_size(size)
+               , m_heightScale(heightScale)
 {
     m_ocean.setValue(-1.0);
 
@@ -165,7 +166,7 @@ bool RandomGenerator::fetchData(int destSize, HeightMap::Face face, const QPoint
         QVector3D point = line;
         for (int j = 0; j < destSize + 4; ++j) {
             QVector3D p = mapToSphere(point, faceSize);
-            *ptr++ = (m_element->getValue(p.x(), p.y(), p.z(), m_cache) + 1.) / 2.;
+            *ptr++ = m_heightScale * (m_element->getValue(p.x(), p.y(), p.z(), m_cache) + 1.) / 2.;
             point += step;
         }
         line += lineStep;

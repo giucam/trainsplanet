@@ -98,13 +98,14 @@ protected:
 class RandomGenerator : public Generator
 {
 public:
-    RandomGenerator(int size, int seed);
+    RandomGenerator(int size, double heightScale, int seed);
 
     bool fetchData(int destSize, HeightMap::Face face, const QPoint &pos, int size, float *data) override;
     int size() const override;
 
 private:
     int m_size;
+    double m_heightScale;
     noisepp::PerlinModule m_continents;
     noisepp::SelectModule m_continentSelect;
     noisepp::ConstantModule m_ocean;
