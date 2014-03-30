@@ -56,6 +56,8 @@ public:
     Statistics render(const QMatrix4x4 &proj, const QMatrix4x4 &view);
     void cycleRenderMode();
 
+    void generateMap(int seed);
+
 private:
     void renderTerrain(const QMatrix4x4 &proj, const QMatrix4x4 &view);
     void renderTerrainWf(const QMatrix4x4 &proj, const QMatrix4x4 &view);

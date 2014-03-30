@@ -24,6 +24,7 @@
 #include <QElapsedTimer>
 #include <QMatrix4x4>
 #include <QQuaternion>
+#include <QMutex>
 
 class Terrain;
 
@@ -41,6 +42,8 @@ public:
 
     void sync();
     void updateUi();
+
+    Q_INVOKABLE void generateMap(int seed);
 
 protected:
     void mousePressEvent(QMouseEvent *event) override;
@@ -62,6 +65,9 @@ private:
     QList<int> m_keysPressed;
     double m_speed;
     bool m_needsUpdate;
+    bool m_generate;
+    int m_mapSeed;
+    QMutex m_mutex;
 
     double m_fps;
     unsigned int m_times[20];

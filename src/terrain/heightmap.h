@@ -46,6 +46,7 @@ public:
     };
 
     HeightMap(Generator *generator);
+    ~HeightMap();
 
     HeightMapChunk *chunk(Face face, int x, int y, int size);
     inline int size() const { return m_size; }
@@ -85,6 +86,7 @@ class Generator
 {
 public:
     Generator() {}
+    virtual ~Generator() {}
 
     virtual bool fetchData(int destSize, HeightMap::Face face, const QPoint &pos, int size, float *data) = 0;
     virtual int size() const = 0;

@@ -50,6 +50,28 @@ QuadTreeNode::QuadTreeNode(QuadTreeNode *p, HeightMapChunk *map, int l)
     }
 }
 
+QuadTreeNode::~QuadTreeNode()
+{
+    delete chunk;
+    delete[] mapData;
+    if (buffer) {
+        delete texture;
+        delete overlayTexture;
+        delete buffer;
+        delete mesh.indices;
+        delete mesh.wireframeIndices;
+        for (Mesh &m: subMesh) {
+            delete m.indices;
+            delete m.wireframeIndices;
+        }
+    }
+    if (children[0]) {
+        for (QuadTreeNode *c: children) {
+            delete c;
+        }
+    }
+}
+
 bool QuadTreeNode::dataFetched() const
 {
     return dataUploaded() || m_dataFetched;
@@ -106,7 +128,7 @@ void QuadTreeNode::uploadData()
     texture->release();
 
     delete[] mapData;
-    mapData = 0;
+    mapData = nullptr;
 
 
 
@@ -330,6 +352,11 @@ QuadTree::QuadTree(DataFetcher *fetcher, HeightMap::Face face, HeightMap *hmap, 
     m_head->tree = this;
     m_head->fetchData();
     m_head->uploadData();
+}
+
+QuadTree::~QuadTree()
+{
+    delete m_head;
 }
 
 inline double SQR(double x) { return x * x; }

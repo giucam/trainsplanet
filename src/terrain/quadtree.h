@@ -39,6 +39,7 @@ class Frustum;
 class QuadTreeNode {
 public:
     QuadTreeNode(QuadTreeNode *p, HeightMapChunk *map, int l);
+    ~QuadTreeNode();
 
     void fetchData();
     void uploadData();
@@ -90,6 +91,7 @@ class QuadTree
 {
 public:
     QuadTree(DataFetcher *fetcher, HeightMap::Face face, HeightMap *heightMap, int lodLevels);
+    ~QuadTree();
 
     QList<QuadTreeNode *> findNodes(const QVector3D &pos, const Frustum &frustum, bool &again);
     QVector3D findNearestPoint(const QVector3D &p);

@@ -37,6 +37,7 @@ static const int MESHSIZE = 33;
 
 Terrain::Terrain(QObject *parent)
         : QObject(parent)
+        , m_heightMap(nullptr)
         , m_renderMode(2)
 {
     m_heightScale = 50;
@@ -44,19 +45,32 @@ Terrain::Terrain(QObject *parent)
 
     m_dataFetcher = new DataFetcher(this);
     m_dataFetcher->moveToThread(&m_dataFetcherThread);
-    m_dataFetcherThread.start();
 
+    memset(m_tree, 0, sizeof(m_tree));
 
     int seed = 2;//rand();
+    generateMap(seed);
+}
 
-    HeightMap *heightMap = new HeightMap(new RandomGenerator(FACESIZE, m_heightScale, seed));
+void Terrain::generateMap(int seed)
+{
+    m_dataFetcherThread.quit();
+    m_dataFetcherThread.wait();
+    m_dataFetcherThread.start();
 
-    m_tree[0] = new QuadTree(m_dataFetcher, HeightMap::Face::Top, heightMap, 2);
-    m_tree[1] = new QuadTree(m_dataFetcher, HeightMap::Face::Front, heightMap, 2);
-    m_tree[2] = new QuadTree(m_dataFetcher, HeightMap::Face::Right, heightMap, 2);
-    m_tree[3] = new QuadTree(m_dataFetcher, HeightMap::Face::Left, heightMap, 2);
-    m_tree[4] = new QuadTree(m_dataFetcher, HeightMap::Face::Back, heightMap, 2);
-    m_tree[5] = new QuadTree(m_dataFetcher, HeightMap::Face::Bottom, heightMap, 2);
+    for (int i = 0; i < 6; ++i) {
+        delete m_tree[i];
+    }
+
+    delete m_heightMap;
+    m_heightMap = new HeightMap(new RandomGenerator(FACESIZE, m_heightScale, seed));
+
+    m_tree[0] = new QuadTree(m_dataFetcher, HeightMap::Face::Top, m_heightMap, 2);
+    m_tree[1] = new QuadTree(m_dataFetcher, HeightMap::Face::Front, m_heightMap, 2);
+    m_tree[2] = new QuadTree(m_dataFetcher, HeightMap::Face::Right, m_heightMap, 2);
+    m_tree[3] = new QuadTree(m_dataFetcher, HeightMap::Face::Left, m_heightMap, 2);
+    m_tree[4] = new QuadTree(m_dataFetcher, HeightMap::Face::Back, m_heightMap, 2);
+    m_tree[5] = new QuadTree(m_dataFetcher, HeightMap::Face::Bottom, m_heightMap, 2);
 
     float d = (FACESIZE / 2) * double(MESHSIZE - 1) / (float)MESHSIZE;
 
@@ -98,6 +112,11 @@ Terrain::~Terrain()
 {
     m_dataFetcherThread.quit();
     m_dataFetcherThread.wait();
+
+    for (int i = 0; i < 6; ++i) {
+        delete m_tree[i];
+    }
+    delete m_heightMap;
 }
 
 void Terrain::init()

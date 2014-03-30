@@ -41,6 +41,7 @@ Window::Window()
       , m_mouseDown(false)
       , m_speed(0.01)
       , m_needsUpdate(true)
+      , m_generate(false)
       , m_curTimeId(0)
 {
     updateUi();
@@ -58,6 +59,8 @@ Window::Window()
     format.setDepthBufferSize(24);
     format.setOption(QSurfaceFormat::DebugContext);
     setFormat(format);
+
+    rootContext()->setContextProperty("Game", this);
 
     resize(1024, 768);
 
@@ -137,6 +140,11 @@ void Window::wheelEvent(QWheelEvent *event)
 
 void Window::keyPressEvent(QKeyEvent *event)
 {
+    QQuickView::keyPressEvent(event);
+    if (event->isAccepted()) {
+        return;
+    }
+
     if (event->key() == Qt::Key_M) {
         m_terrain->cycleRenderMode();
         return;
@@ -154,6 +162,8 @@ void Window::keyPressEvent(QKeyEvent *event)
 
 void Window::keyReleaseEvent(QKeyEvent *event)
 {
+    QQuickView::keyReleaseEvent(event);
+
     m_keysPressed.removeOne(event->key());
 }
 
@@ -246,8 +256,17 @@ double Window::perSecond(double n) const
     return n * m_frameTime;
 }
 
+void Window::generateMap(int seed)
+{
+    QMutexLocker lock(&m_mutex);
+    m_generate = true;
+    m_mapSeed = seed;
+}
+
 void Window::sync()
 {
+    QMutexLocker lock(&m_mutex);
+
     if (!m_terrain) {
         m_terrain = new Terrain;
         m_timer.start();
@@ -271,6 +290,12 @@ void Window::sync()
 //         m_camera.rotation = QQuaternion(0, 0, 1, 45);
 
         glClearColor(1, 1, 1, 1);
+    }
+
+    if (m_generate) {
+        m_terrain->generateMap(m_mapSeed);
+        m_needsUpdate = true;
+        m_generate = false;
     }
 
     updateView();

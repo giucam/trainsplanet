@@ -32,6 +32,11 @@ HeightMap::HeightMap(Generator *gen)
     gen->map = this;
 }
 
+HeightMap::~HeightMap()
+{
+    delete m_generator;
+}
+
 HeightMapChunk *HeightMap::chunk(Face face, int x, int y, int size)
 {
     HeightMapChunk *chunk = new HeightMapChunk;
