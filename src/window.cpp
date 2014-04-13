@@ -42,9 +42,11 @@ Window::Window()
       , m_speed(0.01)
       , m_needsUpdate(true)
       , m_generate(false)
+      , m_paused(false)
       , m_curTimeId(0)
 {
     updateUi();
+    rootContext()->setContextProperty("Game", this);
 
     setSurfaceType(QWindow::OpenGLSurface);
     setClearBeforeRendering(false);
@@ -59,8 +61,6 @@ Window::Window()
     format.setDepthBufferSize(24);
     format.setOption(QSurfaceFormat::DebugContext);
     setFormat(format);
-
-    rootContext()->setContextProperty("Game", this);
 
     resize(1024, 768);
 
@@ -337,7 +337,7 @@ void Window::renderNow()
 
 //     projection.translate(-128, 138, -80);
 
-    if (m_needsUpdate) {
+    if (m_needsUpdate && !m_paused) {
         m_needsUpdate = m_terrain->update(-(m_view.inverted() * QVector3D(0,0,0)), Frustum(m_view, m_projection));
     }
     Terrain::Statistics stats = m_terrain->render(m_projection, m_view);
@@ -366,4 +366,12 @@ void Window::renderNow()
     glBindTexture(GL_TEXTURE_2D, 0);
 
 //     resetOpenGLState();
+}
+
+void Window::setPaused(bool p)
+{
+    if (p != m_paused) {
+        m_paused = p;
+        emit pausedChanged();
+    }
 }

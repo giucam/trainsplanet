@@ -31,6 +31,7 @@ class Terrain;
 class Window : public QQuickView
 {
     Q_OBJECT
+    Q_PROPERTY(bool paused READ paused WRITE setPaused NOTIFY pausedChanged)
 public:
     Window();
     ~Window();
@@ -43,7 +44,13 @@ public:
     void sync();
     void updateUi();
 
+    bool paused() const { return m_paused; }
+    void setPaused(bool p);
+
     Q_INVOKABLE void generateMap(int seed);
+
+signals:
+    void pausedChanged();
 
 protected:
     void mousePressEvent(QMouseEvent *event) override;
@@ -68,6 +75,7 @@ private:
     bool m_generate;
     int m_mapSeed;
     QMutex m_mutex;
+    bool m_paused;
 
     double m_fps;
     unsigned int m_times[20];
