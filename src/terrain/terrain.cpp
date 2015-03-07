@@ -509,7 +509,7 @@ Terrain::Statistics Terrain::render(const QMatrix4x4 &proj, const QMatrix4x4 &vi
     }
 
     glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFuncSeparate(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE);
     renderWater(proj, view);
 
     return m_statistics;
